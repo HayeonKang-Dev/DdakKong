@@ -1,0 +1,42 @@
+[
+	{
+		"file": "C:\\WorkSpace\\DdakKong\\DdakKong\\Source\\DdakKong\\DdakKong.Build.cs",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\HostX64\\x64\\cl.exe",
+			"@C:\\WorkSpace\\DdakKong\\DdakKong\\.vscode\\compileCommands_Default\\DdakKong.255.rsp"
+		],
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.1\\Engine\\Source"
+	},
+	{
+		"file": "C:\\WorkSpace\\DdakKong\\DdakKong\\Source\\DdakKong\\DdakKong.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\HostX64\\x64\\cl.exe",
+			"@C:\\WorkSpace\\DdakKong\\DdakKong\\.vscode\\compileCommands_Default\\DdakKong.255.rsp"
+		],
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.1\\Engine\\Source"
+	},
+	{
+		"file": "C:\\WorkSpace\\DdakKong\\DdakKong\\Source\\DdakKong\\DdakKong.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\HostX64\\x64\\cl.exe",
+			"@C:\\WorkSpace\\DdakKong\\DdakKong\\.vscode\\compileCommands_Default\\DdakKong.255.rsp"
+		],
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.1\\Engine\\Source"
+	},
+	{
+		"file": "C:\\WorkSpace\\DdakKong\\DdakKong\\Source\\DdakKong\\DdakKongGameModeBase.cpp",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\HostX64\\x64\\cl.exe",
+			"@C:\\WorkSpace\\DdakKong\\DdakKong\\.vscode\\compileCommands_Default\\DdakKong.255.rsp"
+		],
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.1\\Engine\\Source"
+	},
+	{
+		"file": "C:\\WorkSpace\\DdakKong\\DdakKong\\Source\\DdakKong\\DdakKongGameModeBase.h",
+		"arguments": [
+			"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\HostX64\\x64\\cl.exe",
+			"@C:\\WorkSpace\\DdakKong\\DdakKong\\.vscode\\compileCommands_Default\\DdakKong.255.rsp"
+		],
+		"directory": "C:\\Program Files\\Epic Games\\UE_5.1\\Engine\\Source"
+	}
+]
