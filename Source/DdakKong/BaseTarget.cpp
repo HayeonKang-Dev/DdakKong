@@ -5,16 +5,13 @@
 
 // 과녁 맞으면 파괴 
 
-// Sets default values
 ABaseTarget::ABaseTarget()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 }
 
 
-// Called when the game starts or when spawned
 void ABaseTarget::BeginPlay()
 {
 	Super::BeginPlay();
@@ -34,7 +31,6 @@ void ABaseTarget::ApplyDamage(int32 Damage, FVector HitLocation, FVector HitNorm
 {
 	HP -= Damage; 
 
-	// 자국 적용
 
 	// 과녁의 체력이 0 일 때 
 	if (IsDead()) {
@@ -48,7 +44,6 @@ void ABaseTarget::ApplyDamage(int32 Damage, FVector HitLocation, FVector HitNorm
 }
 
 
-// Called every frame
 void ABaseTarget::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);

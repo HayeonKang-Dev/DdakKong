@@ -3,27 +3,24 @@
 
 #include "BaseShooter.h"
 #include "DKPlayerController.h"
+#include "Kismet/GameplayStatics.h"
 // PlayerController에서 입력이 들어오면, 총 발사
 // 타격 판정
 // 점수 관리 
 
-
-// Sets default values
 ABaseShooter::ABaseShooter()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
-	
-
-
 }
 
-// Called when the game starts or when spawned
+
 void ABaseShooter::BeginPlay()
 {
 	Super::BeginPlay();
 	TArray<UActorComponent*> SphereComponents = GetComponentsByClass(USphereComponent::StaticClass());
+
+	PC = Cast<ADKPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+
 	for (UActorComponent* Comp : SphereComponents)
 	{
 		if (Comp && Comp->GetName() == TEXT("Bullet"))
@@ -34,14 +31,13 @@ void ABaseShooter::BeginPlay()
 	}
 }
 
-// Called every frame
 void ABaseShooter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+
 }
 
-// Called to bind functionality to input
 void ABaseShooter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
@@ -50,11 +46,14 @@ void ABaseShooter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 }
 
+int32 ABaseShooter::GetScore()
+{
+    return Score;
+}
+
 void ABaseShooter::AddScore(int32 Amount, FVector HitLocation)
 {
 	Score += Amount; 
-
-	ADKPlayerController* PC = Cast<ADKPlayerController>(GetController()); 
 	if (PC) 
 	{
 		PC->OnScoreUpdated(HitLocation); 
@@ -79,7 +78,8 @@ void ABaseShooter::Shoot()
 		if (AActor* HitActor = Hit.GetActor()) {
 			if (HitActor->ActorHasTag("Target"))
 			{
-				Score += 10; 
+				// Score += 10; 
+				AddScore(10, HitActor->GetActorLocation()); 
 				UE_LOG(LogTemp, Warning, TEXT("Target is Hitted!"));
 				ABaseTarget* Target = Cast<ABaseTarget>(HitActor); 
 				if (Target) {

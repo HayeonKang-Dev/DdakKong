@@ -14,13 +14,11 @@ class DDAKKONG_API ABaseTarget : public AActor
 	GENERATED_BODY()
 	
 public:	
-	// Sets default values for this actor's properties
 	ABaseTarget();
 
 	void ApplyDamage(int32 Damage, FVector HitLocation, FVector HitNormal);
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 public:	

@@ -3,10 +3,9 @@
 
 #include "RankingRequester.h"
 
-// Sets default values
+
 ARankingRequester::ARankingRequester()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 }
@@ -20,7 +19,7 @@ void ARankingRequester::RequestTop10Rankings()
 	Request->OnProcessRequestComplete().BindUObject(this, &ARankingRequester::OnRankingsReceived);
 
 	// Node.js 서버 주소로 GET 요청 설정
-	Request->SetURL("http://localhost:3306/getRankings");
+	Request->SetURL("http://localhost:3000/getRankings");
 	Request->SetVerb("GET"); 
 
 	// 요청 전송
@@ -67,7 +66,6 @@ void ARankingRequester::OnRankingsReceived(FHttpRequestPtr Request, FHttpRespons
 			UE_LOG(LogTemp, Log, TEXT("순위 %d: %s - %d점"), i+1, *ReceivedRankings[i].PlayerName, ReceivedRankings[i].Score);
 		}
 
-		// ReceivedRankings 배열을 UI 위젯에 전달해 화면에 표시 
 	}
 	else
 	{

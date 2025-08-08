@@ -6,7 +6,9 @@
 #include "GameFramework/Actor.h"
 #include "http.h"
 #include "DKPlayerController.h"
+#include "Blueprint/UserWidget.h"
 #include "RankingRequester.generated.h"
+
 
 
 UCLASS()
@@ -21,9 +23,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Ranking")
 	void RequestTop10Rankings(); 
 
+
 private:
-	void OnRankingsReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful); 
-
-
-
+    // OnRankingsReceived 함수에서 파싱 성공 시 델리게이트를 호출
+    void OnRankingsReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 };
+

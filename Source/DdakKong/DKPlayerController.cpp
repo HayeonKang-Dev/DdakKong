@@ -41,8 +41,6 @@ void ADKPlayerController::StartGame(FString InPlayerName)
 	{
 		CurrentWidget = CreateWidget<UUserWidget>(this, MainWidgetClass);
 		CurrentWidget->AddToViewport();
-		// Main 위젯의 생성자나 애니메이션에서 카운트다운을 시작하고,
-		// 카운트다운이 끝나면 SetPause(false), SetInputMode(FInputModeGameOnly)를 호출하세요.
 	}
 }
 
@@ -57,30 +55,81 @@ void ADKPlayerController::OnScoreUpdated(FVector TargetLocation)
 
         UUserWidget* ScorePopup = CreateWidget<UUserWidget>(this, ScorePopupWidgetClass);
         ScorePopup->SetPositionInViewport(ScreenLocation);
-        ScorePopup->AddToViewport(); // 생성된 위젯은 애니메이션 후 스스로 사라집니다.
+        
+		ScorePopup->SetAlignmentInViewport(FVector2D(0.5f, 0.5f));  // 중앙 기준 정렬
+		ScorePopup->AddToViewport(20);
+
+		// 타이머 2초 후 제거
+        FTimerHandle TimerHandle;
+        // 위젯 제거 
+        GetWorld()->GetTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([=]()
+        {
+            if (ScorePopup && ScorePopup->IsInViewport())
+            {
+                ScorePopup->RemoveFromParent();
+            }
+        }), 1.0f, false); // 2초 후 한 번 실행
+    
     }
 }
 
 void ADKPlayerController::HandleGameEnd()
 {
-	// 4. 게임 종료: Main 위젯 제거, 점수 전송, Ending 위젯 표시
-	if (CurrentWidget)
-	{
-		CurrentWidget->RemoveFromParent();
-	}
+    if (CurrentWidget)
+    {
+        CurrentWidget->RemoveFromParent();
+    }
 
-	SetPause(true);
-	SetInputMode(FInputModeUIOnly());
-	bShowMouseCursor = true;
-	
-	SendFinalScore(); // 서버에 점수 전송
+    SetPause(true);
+    SetInputMode(FInputModeUIOnly());
+    bShowMouseCursor = true;
+    
+    // 게임 종료 시점의 점수를 가져와 서버에 갱신 요청
+    if (ABaseShooter* MyShooter = Cast<ABaseShooter>(GetPawn()))
+    {
+        RequestUpdateScore(PlayerName, MyShooter->GetScore());
+    }
 
-	if (EndingWidgetClass)
-	{
-		CurrentWidget = CreateWidget<UUserWidget>(this, EndingWidgetClass);
-		CurrentWidget->AddToViewport();
-	}
+    if (EndingWidgetClass)
+    {
+        CurrentWidget = CreateWidget<UUserWidget>(this, EndingWidgetClass);
+        CurrentWidget->AddToViewport();
+    }
 }
+
+// 점수 갱신/저장 요청
+void ADKPlayerController::RequestUpdateScore(const FString& InPlayerName, int32 InScore)
+{
+    TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
+    JsonObject->SetStringField("playerName", InPlayerName);
+    JsonObject->SetNumberField("score", InScore);
+
+    FString RequestBody;
+    TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&RequestBody);
+    FJsonSerializer::Serialize(JsonObject.ToSharedRef(), Writer);
+
+    TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
+    Request->OnProcessRequestComplete().BindUObject(this, &ADKPlayerController::OnUpdateScoreResponse);
+    Request->SetURL("http://localhost:3000/updateScore"); // 수정된 서버 주소
+    Request->SetVerb("POST");
+    Request->SetHeader("Content-Type", "application/json");
+    Request->SetContentAsString(RequestBody);
+    Request->ProcessRequest();
+
+    UE_LOG(LogTemp, Warning, TEXT("점수 갱신 요청: %s - %d점"), *InPlayerName, InScore);
+}
+
+// 점수 갱신 응답 처리
+void ADKPlayerController::OnUpdateScoreResponse(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+{
+    if (!bWasSuccessful || !Response.IsValid())
+    {
+        UE_LOG(LogTemp, Error, TEXT("점수 갱신 요청 실패. 서버 상태 확인 필요."));
+        return;
+    }
+    UE_LOG(LogTemp, Log, TEXT("점수 갱신 응답: Status %d, Content: %s"), Response->GetResponseCode(), *Response->GetContentAsString());
+}
+
 
 void ADKPlayerController::SendFinalScore()
 {
@@ -103,60 +152,48 @@ void ADKPlayerController::SendFinalScore()
 	Request->ProcessRequest();
 }
 
+// 랭킹 요청
 void ADKPlayerController::RequestAndShowRankings()
 {
-	// 5. 랭킹 요청
-	TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
-	Request->OnProcessRequestComplete().BindUObject(this, &ADKPlayerController::OnRankingsReceived);
-	Request->SetURL("http://localhost:3000/getRankings");
-	Request->SetVerb("GET");
-	Request->ProcessRequest();
+    TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
+    Request->OnProcessRequestComplete().BindUObject(this, &ADKPlayerController::OnRankingsReceived);
+    Request->SetURL("http://localhost:3000/getRankings");
+    Request->SetVerb("GET");
+    Request->ProcessRequest();
+    UE_LOG(LogTemp, Warning, TEXT("랭킹 데이터 요청 시작..."));
 }
 
+// 랭킹 응답 처리
 void ADKPlayerController::OnRankingsReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
 {
-	if (!bWasSuccessful || !Response.IsValid()) return;
-
-	TArray<TSharedPtr<FJsonValue>> JsonArray;
-	TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Response->GetContentAsString());
-	if (FJsonSerializer::Deserialize(Reader, JsonArray))
-	{
-		TArray<FRankData> RankList;
-		for (const TSharedPtr<FJsonValue>& Value : JsonArray)
-		{
-			TSharedPtr<FJsonObject> RankObject = Value->AsObject();
-			FRankData Data;
-			Data.PlayerName = RankObject->GetStringField("playerName");
-			Data.Score = RankObject->GetIntegerField("score");
-			RankList.Add(Data);
-		}
-		DisplayRankingWidget(RankList); // 파싱된 데이터로 위젯 표시 함수 호출
-	}
-}
-
-void ADKPlayerController::DisplayRankingWidget(const TArray<FRankData>& RankList)
-{
-    // 6. 랭킹 위젯을 동적으로 생성하고 데이터 채우기
-    if (RankingWidgetClass)
+    if (!bWasSuccessful || !Response.IsValid())
     {
-        UUserWidget* RankingWidget = CreateWidget<UUserWidget>(this, RankingWidgetClass);
-        if (!RankingWidget) return;
+        UE_LOG(LogTemp, Error, TEXT("랭킹 데이터 요청 실패. 서버 상태 확인 필요."));
+        return;
+    }
 
-        // 랭킹 위젯 블루프린트에서 'RankingListBox' 이름으로 만든 Vertical Box를 찾아야 합니다.
-        UVerticalBox* ListBox = Cast<UVerticalBox>(RankingWidget->GetWidgetFromName("RankingListBox"));
-        if (ListBox && RankEntryWidgetClass)
+    TArray<FRankData> RankList; // 파싱된 데이터를 담을 배열
+    TArray<TSharedPtr<FJsonValue>> JsonArray;
+    TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Response->GetContentAsString());
+
+    if (FJsonSerializer::Deserialize(Reader, JsonArray))
+    {
+        for (const TSharedPtr<FJsonValue>& Value : JsonArray)
         {
-            ListBox->ClearChildren(); // 기존 목록 지우기
-
-            for (const FRankData& RankData : RankList)
-            {
-                // 여기서 'WBP_RankEntry' 위젯을 동적으로 생성하고
-                // 텍스트를 RankData 값으로 설정한 뒤
-                // ListBox->AddChild()를 통해 자식으로 추가하는 블루프린트 로직이 필요합니다.
-                // 이 부분을 블루프린트에서 구현하는 것이 더 유연합니다.
-            }
+           TSharedPtr<FJsonObject> RankObject = Value->AsObject();
+           FRankData Data;
+           Data.PlayerName = RankObject->GetStringField("playerName");
+           Data.Score = RankObject->GetIntegerField("score");
+           RankList.Add(Data);
         }
-        RankingWidget->AddToViewport();
+        
+        // [핵심!] 파싱이 성공하면, 블루프린트로 방송(Broadcast)합니다.
+        OnRankingsReceived_BP.Broadcast(RankList);
+        UE_LOG(LogTemp, Warning, TEXT("데이터 파싱 성공 및 블루프린트로 Broadcast 완료."));
+    }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("JSON 데이터 파싱 실패."));
     }
 }
 

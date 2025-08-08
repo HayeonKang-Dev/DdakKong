@@ -9,12 +9,10 @@
 // Sets default values
 ABaseWave::ABaseWave()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 }
 
-// Called when the game starts or when spawned
 void ABaseWave::BeginPlay()
 {
 	Super::BeginPlay();
@@ -23,7 +21,6 @@ void ABaseWave::BeginPlay()
 	
 }
 
-// Called every frame
 void ABaseWave::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);

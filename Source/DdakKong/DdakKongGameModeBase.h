@@ -19,8 +19,24 @@ public:
 
 	void TargetDestroyed(); 
 
+    // PlayerController가 호출하여 게임 타이머를 시작시킬 함수
+	void StartGameTimer();
+
+    UFUNCTION(BlueprintCallable)
+    int32 GetTimeRemaining() {return TimeRemaining; }
+
 protected:	
 	virtual void BeginPlay() override; 
+
+    virtual void Tick(float DeltaTime) override; 
+
+    // 게임 시간 (초)
+    UPROPERTY(EditDefaultsOnly, Category = "Game Rules")
+    int32 GameTimeInSeconds = 30.0f;
+    
+    // 실시간으로 줄어드는 남은 시간 (UI에 표시될 변수)
+	UPROPERTY(BlueprintReadOnly, Category = "Game Rules")
+	int32 TimeRemaining;
 
 private: 
 	void SpawnNewTarget(); 
@@ -41,9 +57,7 @@ private:
     UPROPERTY(EditDefaultsOnly, Category = "Spawning")
     float SpawnRangeX = 100.0f;
 
-    // 게임 시간 (초)
-    UPROPERTY(EditDefaultsOnly, Category = "Game Rules")
-    float GameTimeInSeconds = 30.0f;
+    
 
     // 게임 타이머 핸들
     FTimerHandle GameTimerHandle;

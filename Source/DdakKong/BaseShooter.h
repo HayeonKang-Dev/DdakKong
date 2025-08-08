@@ -10,27 +10,28 @@
 
 #include "BaseShooter.generated.h"
 
+class ADKPlayerController; 
+
 UCLASS()
 class DDAKKONG_API ABaseShooter : public ACharacter
 {
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this character's properties
 	ABaseShooter();
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	ADKPlayerController* PC;
+
 public:	
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	int32 GetScore() { return Score; }
+	UFUNCTION(BlueprintCallable)
+	int32 GetScore();
 
 	void AddScore(int32 Amount, FVector HitLocation); 
 private:
@@ -43,5 +44,6 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	int Score=0;
 
+	
 
 };

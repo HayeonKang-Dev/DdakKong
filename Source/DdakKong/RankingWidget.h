@@ -13,5 +13,6 @@ UCLASS()
 class DDAKKONG_API URankingWidget : public UUserWidget
 {
 	GENERATED_BODY()
+
 	
 };
