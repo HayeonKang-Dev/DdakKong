@@ -1,0 +1,29 @@
+# Unreal Engine
+Binaries/
+DerivedDataCache/
+Intermediate/
+Saved/
+Build/
+CrashReportClient/
+Plugins/*/Intermediate/
+Plugins/*/Binaries/
+
+# IDE & Editor
+.vscode/
+*.sln
+*.opensdf
+*.sdf
+*.suo
+*.user
+*.userprefs
+*.log
+*.VC.db
+*.VC.opendb
+*.vs/
+
+# macOS
+.DS_Store
+
+# Xcode
+*.xcodeproj
+*.xcworkspace
